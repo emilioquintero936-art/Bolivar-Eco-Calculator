@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bolívar Eco-Calculator - Módulo Lógico (MVP)</title>
+    <!-- 
+      PROTOTIPO DE LÓGICA CORE (MVP)
+      Este archivo contiene la captura de datos, algoritmo de emisiones (kg CO2e/semana),
+      sistema de Eco-Points y actualización reactiva del DOM sin dependencias externas.
+    -->
+    <style>
+        /* Estilos estructurales básicos para legibilidad del MVP */
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            color: #1e293b;
+            line-height: 1.5;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        select, input[type="number"] {
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+        }
+        button {
+            background-color: #16a34a;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #15803d;
+        }
+        .resultado-card {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        .resultado-item {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .resultado-valor {
+            font-weight: bold;
+            color: #0f172a;
+        }
+        .error-msg {
+            color: #dc2626;
+            font-size: 14px;
+            margin-top: 4px;
+            display: none;
+        }
+        .desglose {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Bolívar Eco-Calculator</h1>
+    <p>Formulario de estimación de impacto ambiental semanal y gamificación ecológica.</p>
+
+    <hr style="margin-bottom: 24px; border: 0; border-top: 1px solid #e2e8f0;">
+
+    <!-- FORMULARIO DE ENTRADA DE DATOS -->
+    <form id="eco-form" onsubmit="event.preventDefault();">
+        
+        <!-- 1. MEDIO DE TRANSPORTE PRINCIPAL -->
+        <div class="form-group">
+            <label for="transporte">1. Medio de transporte al colegio:</label>
+            <select id="transporte" required aria-label="Selecciona medio de transporte">
+                <option value="" disabled selected>-- Selecciona una opción --</option>
+                <option value="bici">Bicicleta / Caminando (0 kg CO₂e/sem)</option>
+                <option value="carpool">Carro compartido / Carpooling (4 kg CO₂e/sem)</option>
+                <option value="bus">Bus escolar o transporte público (7 kg CO₂e/sem)</option>
+                <option value="carro">Carro privado a gasolina/diésel (18 kg CO₂e/sem)</option>
+            </select>
+        </div>
+
+        <!-- 2. CONSUMO DIARIO DE PAPEL -->
+        <div class="form-group">
+            <label for="papel-diario">2. Hojas de papel utilizadas al día (promedio):</label>
+            <input type="number" id="papel-diario" min="0" max="200" placeholder="Ej. 10" required aria-label="Cantidad de hojas al día">
+            <span id="error-papel" class="error-msg">Por favor ingresa un número de hojas válido (0 o mayor).</span>
+        </div>
+
+        <!-- 3. NIVEL DE RECICLAJE Y SEPARACIÓN -->
+        <div class="form-group">
+            <label for="reciclaje">3. Nivel de separación de residuos y reciclaje:</label>
+            <select id="reciclaje" required aria-label="Selecciona nivel de reciclaje">
+                <option value="" disabled selected>-- Selecciona tu nivel de hábito --</option>
+                <option value="ninguno">Ninguno (0% mitigación)</option>
+                <option value="bajo">Bajo / Ocasional (5% mitigación)</option>
+                <option value="medio">Medio / Frecuente (10% mitigación)</option>
+                <option value="alto">Alto / Siempre (20% mitigación)</option>
+            </select>
+        </div>
+
+        <!-- BOTÓN DE ACCIÓN REQUERIDO -->
+        <button type="button" id="btn-calcular">Calcular Impacto Semanal</button>
+    </form>
+
+    <!-- PANEL DE SALIDA DE RESULTADOS EN EL DOM -->
+    <section id="panel-resultados" class="resultado-card" style="display: none;" aria-live="polite">
+        <h2>Resultados Semanales</h2>
+        
+        <div class="resultado-item">
+            Huella de carbono estimada: 
+            <span id="resultado-co2" class="resultado-valor">0.00</span> kg CO₂e / semana
+        </div>
+
+        <div class="resultado-item">
+            Recompensa ecológica: 
+            <span id="resultado-puntos" class="resultado-valor" style="color: #16a34a;">0</span> Eco-Points
+        </div>
+
+        <!-- DESGLOSE TÉCNICO INTERNO PARA TRANSPARENCIA DE CÁLCULO -->
+        <div class="desglose">
+            <strong>Desglose de cálculo:</strong>
+            <ul>
+                <li>Emisiones Transporte: <span id="desglose-transporte">0</span> kg CO₂e</li>
+                <li>Emisiones Papel (5 días escolares): <span id="desglose-papel">0</span> kg CO₂e</li>
+                <li>Descuento por Reciclaje: -<span id="desglose-reciclaje">0</span> kg CO₂e</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- LÓGICA EN JAVASCRIPT VANILLA -->
+    <script>
+        /**
+         * BOLÍVAR ECO-CALCULATOR - CORE LOGIC MVP
+         * Desarrollado con JavaScript Vanilla sin librerías externas.
+         */
+
+        // 1. CONSTANTES DE FACTORES DE EMISIÓN Y PARÁMETROS AMBIENTALES
+        const FACTORES_EMISION_TRANSPORTE = {
+            bici: 0.0,       // kg CO2e / semana
+            carpool: 4.0,    // kg CO2e / semana
+            bus: 7.0,        // kg CO2e / semana
+            carro: 18.0      // kg CO2e / semana
+        };
+
+        const FACTOR_CO2_HOJA_PAPEL = 0.005; // kg CO2e por hoja
+        const DIAS_ESCOLARES_SEMANA = 5;      // 5 días de clase
+
+        const PORCENTAJE_MITIGACION_RECICLAJE = {
+            ninguno: 0.00, // 0%
+            bajo: 0.05,    // 5%
+            medio: 0.10,   // 10%
+            alto: 0.20     // 20%
+        };
+
+        // 2. VINCULACIÓN DE ELEMENTOS DEL DOM
+        const inputTransporte = document.getElementById('transporte');
+        const inputPapelDiario = document.getElementById('papel-diario');
+        const inputReciclaje = document.getElementById('reciclaje');
+        const btnCalcular = document.getElementById('btn-calcular');
+
+        const panelResultados = document.getElementById('panel-resultados');
+        const outputCo2 = document.getElementById('resultado-co2');
+        const outputPuntos = document.getElementById('resultado-puntos');
+
+        const desgloseTransporte = document.getElementById('desglose-transporte');
+        const desglosePapel = document.getElementById('desglose-papel');
+        const desgloseReciclaje = document.getElementById('desglose-reciclaje');
+        const errorPapel = document.getElementById('error-papel');
+
+        // 3. ASIGNACIÓN DE EVENTO AL BOTÓN DE CALCULAR
+        btnCalcular.addEventListener('click', procesarCalculoSemanal);
+
+        /**
+         * Función Principal: Captura, valida y calcula las métricas sostenibles
+         */
+        function procesarCalculoSemanal() {
+            // Ocultar mensaje de error previo
+            errorPapel.style.display = 'none';
+
+            // Captura de valores de los inputs
+            const transporteSeleccionado = inputTransporte.value;
+            const hojasPorDia = parseFloat(inputPapelDiario.value);
+            const reciclajeSeleccionado = inputReciclaje.value;
+
+            // Validaciones básicas de entrada
+            if (!transporteSeleccionado || isNaN(hojasPorDia) || hojasPorDia < 0 || !reciclajeSeleccionado) {
+                if (isNaN(hojasPorDia) || hojasPorDia < 0) {
+                    errorPapel.style.display = 'block';
+                }
+                alertCustom('Por favor completa todos los campos del formulario con información válida.');
+                return;
+            }
+
+            // A. CÁLCULO DE EMISIONES DE CO2 (kg CO2e / semana)
+            
+            // i. Transporte semanal
+            const co2Transporte = FACTORES_EMISION_TRANSPORTE[transporteSeleccionado];
+
+            // ii. Papel semanal (Hojas al día * 5 días escolares * 0.005 kg CO2)
+            const totalHojasSemana = hojasPorDia * DIAS_ESCOLARES_SEMANA;
+            const co2Papel = totalHojasSemana * FACTOR_CO2_HOJA_PAPEL;
+
+            // iii. Suma bruta
+            const co2Bruto = co2Transporte + co2Papel;
+
+            // iv. Porcentaje de mitigación por reciclaje
+            const pctMitigacion = PORCENTAJE_MITIGACION_RECICLAJE[reciclajeSeleccionado];
+            const descuentoCo2 = co2Bruto * pctMitigacion;
+
+            // v. Total kg CO2e neto / semana
+            const co2NetoSemanal = Math.max(0, co2Bruto - descuentoCo2);
+
+
+            // B. ALGORITMO DE ECO-POINTS (Puntuación de Gamificación)
+            let ecoPoints = 100; // Puntaje base
+
+            // i. Bonificaciones / Penalizaciones por Transporte
+            switch (transporteSeleccionado) {
+                case 'bici':
+                    ecoPoints += 25; // Gran bonificación por movilidad limpia
+                    break;
+                case 'carpool':
+                    ecoPoints += 15; // Bonificación por transporte compartido
+                    break;
+                case 'bus':
+                    ecoPoints += 5;  // Bonificación moderada por transporte público
+                    break;
+                case 'carro':
+                    ecoPoints -= 20; // Penalización por vehículo particular
+                    break;
+            }
+
+            // ii. Bonificaciones por Nivel de Reciclaje
+            switch (reciclajeSeleccionado) {
+                case 'alto':
+                    ecoPoints += 20;
+                    break;
+                case 'medio':
+                    ecoPoints += 10;
+                    break;
+                case 'bajo':
+                    ecoPoints += 5;
+                    break;
+                case 'ninguno':
+                    ecoPoints += 0;
+                    break;
+            }
+
+            // iii. Penalización por alto consumo de papel (> 15 hojas/día)
+            if (hojasPorDia > 15) {
+                const penalizacionPapel = Math.round((hojasPorDia - 15) * 1.5);
+                ecoPoints -= penalizacionPapel;
+            } else if (hojasPorDia <= 5) {
+                ecoPoints += 5; // Premio por bajo consumo de papel
+            }
+
+            // Restringir el puntaje en un rango saludable (mínimo 0 puntos)
+            const ecoPointsFinal = Math.max(0, Math.round(ecoPoints));
+
+
+            // C. RENDERIZADO Y ACTUALIZACIÓN DEL DOM
+            outputCo2.textContent = co2NetoSemanal.toFixed(2);
+            outputPuntos.textContent = ecoPointsFinal;
+
+            // Actualizar desglose técnico informativo
+            desgloseTransporte.textContent = co2Transporte.toFixed(2);
+            desglosePapel.textContent = co2Papel.toFixed(2);
+            desgloseReciclaje.textContent = descuentoCo2.toFixed(2);
+
+            // Mostrar la tarjeta de resultados de forma visible
+            panelResultados.style.display = 'block';
+        }
+
+        /**
+         * Reemplazo seguro para alert() evitando bloqueo de ventana emergente
+         */
+        function alertCustom(mensaje) {
+            let errorBox = document.getElementById('custom-alert-box');
+            if (!errorBox) {
+                errorBox = document.createElement('div');
+                errorBox.id = 'custom-alert-box';
+                errorBox.style.cssText = 'background:#fee2e2; border:1px solid #f87171; color:#991b1b; padding:10px 14px; border-radius:6px; margin-bottom:15px; font-size:14px;';
+                document.getElementById('eco-form').prepend(errorBox);
+            }
+            errorBox.textContent = mensaje;
+            errorBox.style.display = 'block';
+
+            setTimeout(() => {
+                if (errorBox) errorBox.style.display = 'none';
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
