@@ -190,17 +190,40 @@
 
         /* PRINT STYLES */
         @media print {
-            body { background: white !important; color: black !important; }
-            .no-print { display: none !important; }
-            .print-only { display: block !important; }
+            @page {
+                size: portrait;
+                margin: 1.5cm;
+            }
+            body {
+                background: #ffffff !important;
+                color: #0f172a !important;
+                font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .no-print, header, section.no-print, footer, #printableReportModal {
+                display: none !important;
+            }
+            .print-certificate {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 auto !important;
+                padding: 1.5rem !important;
+                background-color: #ffffff !important;
+                box-shadow: none !important;
+                page-break-inside: avoid !important;
+            }
         }
-        .print-only { display: none; }
+        .print-certificate {
+            display: none;
+        }
     </style>
 </head>
 <body class="h-full flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
 
     <!-- TOP HEADER / NAVBAR (NO PRINT) -->
-    <header class="no-print sticky top-0 z-40 bg-emerald-900 text-white shadow-xl border-b border-emerald-700/50 backdrop-blur-md">
+    <header class="no-print sticky top-0 z-40 bg-emerald-950 text-white shadow-xl border-b border-emerald-700/50 backdrop-blur-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <!-- Brand Logo & School Title -->
             <div class="flex items-center space-x-3 sm:space-x-4">
@@ -220,7 +243,7 @@
                 </div>
             </div>
 
-            <!-- Header Controls: Language Switcher & Role Selector -->
+            <!-- Header Controls: Dynamic i18n Language Selector & Role Selector -->
             <div class="flex items-center space-x-3">
                 <!-- User Role Badge Selector -->
                 <div class="hidden md:flex items-center bg-emerald-950/70 border border-emerald-700/60 rounded-xl px-3 py-1.5 text-xs text-emerald-200">
@@ -233,10 +256,19 @@
                     </select>
                 </div>
 
-                <!-- Language Switcher Button -->
+                <!-- Dynamic i18n Language Dropdown Selector -->
+                <div class="flex items-center bg-white/10 hover:bg-white/20 transition rounded-xl border border-white/20 px-2 py-1 shadow-sm">
+                    <i class="fa-solid fa-globe text-emerald-300 ml-1.5 mr-1 text-xs"></i>
+                    <select id="langSelect" onchange="changeLanguage(this.value)" aria-label="Seleccionar Idioma / Select Language"
+                            class="bg-transparent font-bold text-xs text-white focus:outline-none cursor-pointer pr-1">
+                        <option value="es" class="bg-slate-900 text-white" selected>Español 🇪🇸</option>
+                        <option value="en" class="bg-slate-900 text-white">English 🇺🇸</option>
+                    </select>
+                </div>
+
+                <!-- Language Switcher Toggle Button -->
                 <button onclick="toggleLanguage()" aria-label="Cambiar idioma / Toggle Language" 
-                        class="flex items-center space-x-2 bg-white/10 hover:bg-white/20 active:scale-95 transition px-3.5 py-2 rounded-xl border border-white/20 text-xs font-bold text-white shadow-sm">
-                    <i class="fa-solid fa-globe text-emerald-300"></i>
+                        class="hidden sm:flex items-center space-x-2 bg-white/10 hover:bg-white/20 active:scale-95 transition px-3 py-1.5 rounded-xl border border-white/20 text-xs font-bold text-white shadow-sm">
                     <span id="currentLangTag">ES</span>
                     <span class="text-emerald-400">|</span>
                     <span id="altLangTag" class="text-slate-300 opacity-70">EN</span>
@@ -623,15 +655,102 @@
 
             <!-- EXPORT REPORT BUTTON -->
             <div class="pt-2">
-                <button onclick="openPrintPreview()" 
+                <button onclick="printCertificate()" 
                         class="btn-eco-primary w-full py-4 px-6 text-sm flex items-center justify-center gap-3">
                     <i class="fa-solid fa-file-pdf text-lg"></i>
-                    <span id="btnExportText">Exportar / Imprimir Reporte PDF</span>
+                    <span id="btnExportText">Exportar / Imprimir Certificado PDF</span>
                 </button>
             </div>
 
         </section>
     </main>
+
+    <!-- ECOLOGICAL CERTIFICATE PRINT CONTAINER (FORMATTED SPECIFICALLY FOR @media print) -->
+    <div id="ecoCertificatePrint" class="print-certificate">
+        <div class="border-4 border-double border-emerald-700 rounded-2xl p-6 bg-white space-y-6">
+            
+            <!-- Institutional Header -->
+            <div class="text-center border-b-2 border-emerald-700 pb-4 space-y-1">
+                <div class="flex items-center justify-center space-x-2 mb-1">
+                    <i class="fa-solid fa-leaf text-emerald-600 text-2xl"></i>
+                    <span class="text-xs font-black uppercase tracking-widest text-emerald-950">Colegio Bolívar — Campus Verde</span>
+                </div>
+                <h1 class="text-xl font-black text-slate-900 uppercase tracking-tight" id="certMainTitle">
+                    Certificado de Impacto Ecológico Semanal
+                </h1>
+                <p class="text-xs font-bold text-emerald-700" id="certSubTitle">
+                    Weekly Eco-Impact Certificate — Bolívar Eco-Calculator
+                </p>
+                <div class="text-[11px] text-slate-600 pt-2 flex justify-between items-center px-4 font-mono">
+                    <span><strong id="certDateLabel">Fecha de Emisión:</strong> <span id="certDateVal">11/11/2026</span></span>
+                    <span><strong id="certRoleLabel">Comunidad:</strong> <span id="certRoleVal">Estudiante</span></span>
+                </div>
+            </div>
+
+            <!-- Score & Tier Badge Cards -->
+            <div class="grid grid-cols-3 gap-3 bg-emerald-50/80 border border-emerald-300 rounded-2xl p-4 text-center">
+                <div class="space-y-0.5">
+                    <div class="text-[10px] font-extrabold uppercase text-emerald-900" id="certScoreLabel">Eco-Points Obtenidos</div>
+                    <div class="text-3xl font-black text-emerald-700 font-mono" id="certPointsVal">85 / 100</div>
+                    <div class="text-[9px] font-semibold text-emerald-800" id="certScoreSub">Desempeño Sostenible</div>
+                </div>
+                
+                <div class="space-y-0.5 border-x border-emerald-300/80 px-2">
+                    <div class="text-[10px] font-extrabold uppercase text-slate-700" id="certCo2Label">Huella CO₂ Semanal</div>
+                    <div class="text-2xl font-black text-slate-900 font-mono" id="certCo2Val">0.0 kg</div>
+                    <div class="text-[9px] text-slate-600">kg CO₂e / semana</div>
+                </div>
+
+                <div class="space-y-0.5 flex flex-col items-center justify-center">
+                    <div class="text-[10px] font-extrabold uppercase text-amber-900" id="certTierLabel">Nivel Ecológico</div>
+                    <div class="text-xs font-black text-slate-900 mt-1 flex items-center gap-1" id="certBadgeTitle">
+                        <i class="fa-solid fa-crown text-amber-500"></i> Eco Guardián
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Breakdown Table -->
+            <div class="space-y-2">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 border-b border-slate-200 pb-1" id="certTableHeading">
+                    1. Resumen de Hábitos y Emisiones Evaluadas
+                </h3>
+                <table class="w-full text-xs text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-700 border-b border-slate-300">
+                            <th class="p-2 font-bold" id="certThCat">Categoría</th>
+                            <th class="p-2 font-bold" id="certThHabit">Hábito Reportado</th>
+                            <th class="p-2 font-bold" id="certThFactor">Factor de Impacto</th>
+                            <th class="p-2 font-bold text-right" id="certThCo2">Emisión kg CO₂e</th>
+                        </tr>
+                    </thead>
+                    <tbody id="certTableBody" class="divide-y divide-slate-200">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Environmental Commitment & Reflection -->
+            <div class="border border-emerald-300 rounded-xl p-3.5 bg-emerald-50/50 space-y-1">
+                <div class="text-xs font-bold text-emerald-950 uppercase" id="certCommitHeader">2. Compromiso Ambiental Escolar:</div>
+                <p class="text-[11px] text-slate-700 italic leading-relaxed" id="certCommitText">
+                    "Me comprometo a mantener y mejorar mis hábitos sostenibles en la comunidad Bolívar, reduciendo mi huella de carbono y promoviendo la conservación de recursos."
+                </p>
+            </div>
+
+            <!-- Signatures Section -->
+            <div class="grid grid-cols-2 gap-10 pt-6">
+                <div class="border-t-2 border-slate-400 text-center pt-2">
+                    <div class="text-xs font-bold text-slate-800" id="certSignUser">Firma del Estudiante / Participante</div>
+                    <div class="text-[10px] text-slate-500" id="certSignDate">Fecha: ____ / ____ / 2026</div>
+                </div>
+                <div class="border-t-2 border-emerald-600 text-center pt-2">
+                    <div class="text-xs font-bold text-emerald-950" id="certSignOffice">Sello / Validación Oficina Ambiental</div>
+                    <div class="text-[10px] text-emerald-700 font-semibold" id="certSchoolStamp">Colegio Bolívar Campus Verde</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
 
     <!-- FOOTER (NO PRINT) -->
     <footer class="no-print bg-emerald-950 text-emerald-200/80 text-xs py-8 border-t border-emerald-800 mt-12">
@@ -814,10 +933,10 @@
                 car: 0.192
             },
             paper: {
-                virgin: 0.005,   // 5 grams per sheet
-                recycled: 0.002  // 2 grams per sheet (-60% offset)
+                virgin: 0.005,
+                recycled: 0.002
             },
-            recyclingOffsetPerCategory: 0.50 // 0.50 kg CO2 offset per active recycling category
+            recyclingOffsetPerCategory: 0.50
         };
 
         const state = {
@@ -886,9 +1005,27 @@
                 chart2Footer: "Meta institucional: Mantenerse por debajo de 4.0 kg CO₂e/semana.",
                 tipsHeader: "Recomendaciones Personalizadas para Ti",
                 tipsCountTag: "Acciones Clave",
-                btnExportText: "Exportar / Imprimir Reporte PDF",
+                btnExportText: "Exportar / Imprimir Certificado PDF",
                 footerSub: "Diseñado para la comunidad académica. Cumple con estándares ISO 14064 y WCAG 2.1 AA.",
                 roleLabelText: "Rol:",
+                certMainTitle: "Certificado de Impacto Ecológico Semanal",
+                certSubTitle: "Weekly Eco-Impact Certificate — Bolívar Eco-Calculator",
+                certDateLabel: "Fecha de Emisión:",
+                certRoleLabel: "Comunidad:",
+                certScoreLabel: "Eco-Points Obtenidos",
+                certScoreSub: "Desempeño Sostenible",
+                certCo2Label: "Huella CO₂ Semanal",
+                certTierLabel: "Nivel Ecológico",
+                certTableHeading: "1. Resumen de Hábitos y Emisiones Evaluadas",
+                certThCat: "Categoría",
+                certThHabit: "Hábito Reportado",
+                certThFactor: "Factor de Impacto",
+                certThCo2: "Emisión kg CO₂e",
+                certCommitHeader: "2. Compromiso Ambiental Escolar:",
+                certCommitText: '"Me comprometo a mantener y mejorar mis hábitos sostenibles en la comunidad Bolívar, reduciendo mi huella de carbono y promoviendo la conservación de recursos."',
+                certSignUser: "Firma del Estudiante / Participante",
+                certSignOffice: "Sello / Validación Oficina Ambiental",
+                certSchoolStamp: "Colegio Bolívar Campus Verde",
                 modalTitle: "Vista Previa del Reporte Institucional",
                 modalPrintBtn: "Imprimir / Guardar PDF",
                 repTagline: "Oficina de Gestión Ambiental Escolar",
@@ -979,9 +1116,27 @@
                 chart2Footer: "Institutional target: Keep emissions under 4.0 kg CO₂e/week.",
                 tipsHeader: "Personalized Recommendations for You",
                 tipsCountTag: "Key Actions",
-                btnExportText: "Export / Print PDF Report",
+                btnExportText: "Export / Print PDF Certificate",
                 footerSub: "Designed for the academic community. Complies with ISO 14064 and WCAG 2.1 AA.",
                 roleLabelText: "Role:",
+                certMainTitle: "Weekly Ecological Impact Certificate",
+                certSubTitle: "Weekly Eco-Impact Certificate — Bolívar Eco-Calculator",
+                certDateLabel: "Issue Date:",
+                certRoleLabel: "Community:",
+                certScoreLabel: "Eco-Points Score",
+                certScoreSub: "Sustainable Rating",
+                certCo2Label: "Weekly CO₂ Footprint",
+                certTierLabel: "Eco Tier Level",
+                certTableHeading: "1. Summary of Evaluated Habits and Emissions",
+                certThCat: "Category",
+                certThHabit: "Reported Habit",
+                certThFactor: "Impact Factor",
+                certThCo2: "Emission kg CO₂e",
+                certCommitHeader: "2. School Environmental Pledge:",
+                certCommitText: '"I pledge to maintain and improve my sustainable habits within the Bolívar community, reducing my carbon footprint and promoting resource conservation."',
+                certSignUser: "Student / Participant Signature",
+                certSignOffice: "Environmental Office Seal / Validation",
+                certSchoolStamp: "Colegio Bolívar Green Campus",
                 modalTitle: "Institutional Report Preview",
                 modalPrintBtn: "Print / Save PDF",
                 repTagline: "School Environmental Management Office",
@@ -1037,12 +1192,18 @@
             updateUIStrings();
         });
 
-        function toggleLanguage() {
-            state.lang = state.lang === 'es' ? 'en' : 'es';
-            document.getElementById('currentLangTag').textContent = state.lang.toUpperCase();
-            document.getElementById('altLangTag').textContent = state.lang === 'es' ? 'EN' : 'ES';
+        function changeLanguage(newLang) {
+            state.lang = newLang;
+            document.getElementById('langSelect').value = newLang;
+            document.getElementById('currentLangTag').textContent = newLang.toUpperCase();
+            document.getElementById('altLangTag').textContent = newLang === 'es' ? 'EN' : 'ES';
             updateUIStrings();
             recalculate();
+        }
+
+        function toggleLanguage() {
+            const nextLang = state.lang === 'es' ? 'en' : 'es';
+            changeLanguage(nextLang);
         }
 
         function updateUIStrings() {
@@ -1222,10 +1383,68 @@
             updateBadgeTier(ecoPointsScore);
             updateChartsData(co2Transport, co2Paper, co2RecyclingOffset, netCo2Weekly);
             renderRecommendations(netCo2Weekly, co2Transport, co2Paper, activeRecycledCount);
+            populateCertificateData(netCo2Weekly, ecoPointsScore, co2Transport, co2Paper, co2RecyclingOffset);
 
             if (ecoPointsScore >= 90 && Math.random() < 0.08) {
                 confetti({ particleCount: 40, spread: 55, origin: { y: 0.7 } });
             }
+        }
+
+        function populateCertificateData(netCo2, ecoPoints, co2Trans, co2Paper, co2Offset) {
+            const isEs = state.lang === 'es';
+            const dict = i18n[state.lang];
+
+            document.getElementById('certDateVal').textContent = new Date().toLocaleDateString(isEs ? 'es-CO' : 'en-US');
+            document.getElementById('certRoleVal').textContent = state.role.toUpperCase();
+
+            document.getElementById('certCo2Val').textContent = `${netCo2.toFixed(1)} kg`;
+            document.getElementById('certPointsVal').textContent = `${ecoPoints} / 100`;
+            document.getElementById('certBadgeTitle').innerHTML = document.getElementById('badgeTitleText').innerHTML;
+
+            const tbody = document.getElementById('certTableBody');
+            tbody.innerHTML = '';
+
+            const transFactor = EMISSION_FACTORS.transport[state.transportMode];
+            const paperFactor = EMISSION_FACTORS.paper[state.paperType];
+            const activeRecycledCount = Object.values(state.recycling).filter(Boolean).length;
+
+            const rows = [
+                {
+                    cat: isEs ? 'Transporte Principal' : 'Primary Transport',
+                    habit: `${state.transportMode.toUpperCase()} (${state.distance} km/sem)`,
+                    factor: `${transFactor.toFixed(3)} kg CO₂/km`,
+                    co2: `+${co2Trans.toFixed(2)} kg`
+                },
+                {
+                    cat: isEs ? 'Consumo Papel' : 'Paper Usage',
+                    habit: `${state.paperSheets} ${isEs ? 'hojas' : 'sheets'} (${state.paperType})`,
+                    factor: `${paperFactor.toFixed(3)} kg CO₂/hoja`,
+                    co2: `+${co2Paper.toFixed(2)} kg`
+                },
+                {
+                    cat: isEs ? 'Mitigación Reciclaje' : 'Recycling Offset',
+                    habit: `${activeRecycledCount} ${isEs ? 'categorías activas' : 'active categories'}`,
+                    factor: `-0.50 kg CO₂ / cat`,
+                    co2: `-${co2Offset.toFixed(2)} kg`
+                }
+            ];
+
+            rows.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-200 text-slate-700";
+                tr.innerHTML = `
+                    <td class="p-2 font-bold">${r.cat}</td>
+                    <td class="p-2">${r.habit}</td>
+                    <td class="p-2 font-mono text-[11px]">${r.factor}</td>
+                    <td class="p-2 text-right font-mono font-bold">${r.co2}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function printCertificate() {
+            recalculate();
+            window.print();
         }
 
         function updateBadgeTier(score) {
