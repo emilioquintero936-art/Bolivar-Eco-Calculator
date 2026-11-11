@@ -1,0 +1,1520 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bolívar Eco-Calculator | Colegio Bolívar</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                            950: '#052e16',
+                        },
+                        emerald: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            200: '#a7f3d0',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        /* ==========================================================================
+           GREEN UI DESIGN SYSTEM & VARIABLES (:root)
+           ========================================================================== */
+        :root {
+            /* Palette: Emerald Green Mode */
+            --color-primary: #059669;        /* Emerald 600 */
+            --color-primary-hover: #047857;  /* Emerald 700 */
+            --color-primary-light: #d1fae5;  /* Emerald 100 */
+            --color-secondary: #065f46;      /* Forest Green 800 */
+            --color-accent: #10b981;         /* Emerald 500 */
+            --color-mint: #a7f3d0;           /* Mint Green 200 */
+            --color-lime: #84cc16;           /* Leaf Lime */
+
+            /* Page & Card Surfaces */
+            --bg-page: #f0fdf4;              /* Eco Ultra-Soft Green */
+            --bg-card: #ffffff;              /* Pure White Card */
+            --bg-card-subtle: #f8fafc;       /* Slate/Mint Subtle Surface */
+            --border-card: rgba(16, 185, 129, 0.15); /* Soft Emerald Border */
+
+            /* Text & Contrast (WCAG 2.1 AA Compliant) */
+            --text-main: #064e3b;            /* Deep Forest Text */
+            --text-body: #1e293b;            /* High Contrast Slate 800 */
+            --text-muted: #475569;           /* Readable Slate 600 */
+            --text-light: #64748b;           /* Slate 500 */
+
+            /* Depth & Elevation */
+            --shadow-card: 0 10px 25px -5px rgba(6, 78, 59, 0.08), 0 8px 10px -6px rgba(6, 78, 59, 0.04);
+            --shadow-float: 0 20px 35px -10px rgba(5, 150, 105, 0.18);
+            
+            /* Border Radii */
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-pill: 9999px;
+
+            /* Micro-Transitions */
+            --transition-bounce: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-body);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* VISUAL CARD CONTAINERS */
+        .eco-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            transition: var(--transition-smooth);
+        }
+        .eco-card:hover {
+            box-shadow: var(--shadow-float);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .eco-card-subtle {
+            background: var(--bg-card-subtle);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: var(--radius-md);
+        }
+
+        /* CUSTOM STYLED FORM CONTROLS */
+        .eco-input, .eco-select {
+            background-color: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: var(--radius-sm);
+            padding: 0.65rem 0.9rem;
+            font-size: 0.875rem;
+            color: var(--text-body);
+            transition: var(--transition-smooth);
+        }
+        .eco-input:focus, .eco-select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+
+        /* CUSTOM RANGE SLIDER */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(5, 150, 105, 0.4);
+            border: 2px solid #ffffff;
+            transition: var(--transition-bounce);
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: var(--color-primary-hover);
+        }
+
+        /* PRIMARY ACTION BUTTON */
+        .btn-eco-primary {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: #ffffff;
+            font-weight: 700;
+            border-radius: var(--radius-md);
+            box-shadow: 0 10px 20px -5px rgba(5, 150, 105, 0.4);
+            transition: var(--transition-bounce);
+        }
+        .btn-eco-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 26px -4px rgba(5, 150, 105, 0.5);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        .btn-eco-primary:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* TRANSPORT MODE CARD TILES */
+        .transport-tile {
+            background-color: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition-bounce);
+        }
+        .transport-tile:hover {
+            border-color: var(--color-mint);
+            transform: translateY(-2px);
+        }
+        .transport-tile.active {
+            background-color: var(--color-primary-light);
+            border-color: var(--color-primary);
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.15);
+        }
+
+        /* PRINT STYLES */
+        @media print {
+            body { background: white !important; color: black !important; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+        }
+        .print-only { display: none; }
+    </style>
+</head>
+<body class="h-full flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
+
+    <!-- TOP HEADER / NAVBAR (NO PRINT) -->
+    <header class="no-print sticky top-0 z-40 bg-emerald-900 text-white shadow-xl border-b border-emerald-700/50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Brand Logo & School Title -->
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                <div class="bg-gradient-to-tr from-emerald-500 to-emerald-300 p-3 rounded-2xl shadow-lg ring-2 ring-white/20">
+                    <i class="fa-solid fa-leaf text-2xl text-emerald-950"></i>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-[11px] font-extrabold tracking-widest uppercase bg-emerald-800 text-emerald-200 px-2.5 py-0.5 rounded-full border border-emerald-700">
+                            Colegio Bolívar
+                        </span>
+                        <span class="text-xs text-emerald-300 hidden sm:inline"><i class="fa-solid fa-earth-americas mr-1"></i>Campus Verde 2026</span>
+                    </div>
+                    <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center">
+                        Bolívar Eco-Calculator
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Header Controls: Language Switcher & Role Selector -->
+            <div class="flex items-center space-x-3">
+                <!-- User Role Badge Selector -->
+                <div class="hidden md:flex items-center bg-emerald-950/70 border border-emerald-700/60 rounded-xl px-3 py-1.5 text-xs text-emerald-200">
+                    <i class="fa-solid fa-user-graduate text-emerald-400 mr-2"></i>
+                    <span id="roleLabelText" class="font-medium">Rol:</span>
+                    <select id="userRoleSelect" onchange="updateRole(this.value)" class="bg-transparent font-bold text-white ml-1 focus:outline-none cursor-pointer">
+                        <option value="student" class="bg-slate-900 text-white" selected>Estudiante / Student</option>
+                        <option value="teacher" class="bg-slate-900 text-white">Docente / Teacher</option>
+                        <option value="staff" class="bg-slate-900 text-white">Administrativo / Staff</option>
+                    </select>
+                </div>
+
+                <!-- Language Switcher Button -->
+                <button onclick="toggleLanguage()" aria-label="Cambiar idioma / Toggle Language" 
+                        class="flex items-center space-x-2 bg-white/10 hover:bg-white/20 active:scale-95 transition px-3.5 py-2 rounded-xl border border-white/20 text-xs font-bold text-white shadow-sm">
+                    <i class="fa-solid fa-globe text-emerald-300"></i>
+                    <span id="currentLangTag">ES</span>
+                    <span class="text-emerald-400">|</span>
+                    <span id="altLangTag" class="text-slate-300 opacity-70">EN</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO BANNER (NO PRINT) -->
+    <section class="no-print bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-900 text-white py-6 border-b border-emerald-800/40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="space-y-1 text-center md:text-left">
+                <h2 id="heroTitle" class="text-lg sm:text-xl font-bold text-emerald-100 flex items-center justify-center md:justify-start gap-2">
+                    <i class="fa-solid fa-seedling text-emerald-400"></i>
+                    Mide tu Huella de Carbono Semanal y Gana Eco-Points
+                </h2>
+                <p id="heroSubtitle" class="text-xs sm:text-sm text-emerald-200/80 max-w-2xl">
+                    Calcula el impacto ambiental de tus desplazamientos al colegio, consumo de papel y hábitos de reciclaje. ¡Consigue insignias y lidera la transformación sostenible!
+                </p>
+            </div>
+
+            <!-- Quick Presets -->
+            <div class="flex flex-wrap items-center justify-center gap-2 bg-black/20 p-2 rounded-2xl border border-white/10">
+                <span id="presetsLabel" class="text-xs text-emerald-200 font-bold px-2">Cargar Ejemplo:</span>
+                <button onclick="loadPreset('eco')" class="text-xs bg-emerald-600/80 hover:bg-emerald-500 text-white font-semibold px-2.5 py-1 rounded-lg transition border border-emerald-400/30 flex items-center gap-1">
+                    <i class="fa-solid fa-bicycle"></i> Eco Guardián
+                </button>
+                <button onclick="loadPreset('average')" class="text-xs bg-amber-600/80 hover:bg-amber-500 text-white font-semibold px-2.5 py-1 rounded-lg transition border border-amber-400/30 flex items-center gap-1">
+                    <i class="fa-solid fa-bus"></i> Promedio
+                </button>
+                <button onclick="loadPreset('high')" class="text-xs bg-rose-600/80 hover:bg-rose-500 text-white font-semibold px-2.5 py-1 rounded-lg transition border border-rose-400/30 flex items-center gap-1">
+                    <i class="fa-solid fa-car"></i> Alto Impacto
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN INTERACTIVE APP CONTAINER (NO PRINT) -->
+    <main class="no-print flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- LEFT COLUMN: FORMULARIO EN TARJETAS VISUALES (5 COLS) -->
+        <section class="lg:col-span-5 space-y-6" aria-label="Formulario de Cálculo Semanal">
+            
+            <div class="eco-card p-6 space-y-6">
+                <div class="border-b border-slate-100 pb-4 flex items-center justify-between">
+                    <div>
+                        <span class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider block" id="calculatorTag">Paso a Paso</span>
+                        <h2 class="text-xl font-black text-slate-900 flex items-center gap-2" id="calculatorHeader">
+                            <i class="fa-solid fa-sliders text-emerald-600"></i>
+                            Calculadora Semanal
+                        </h2>
+                    </div>
+                    <span class="text-xs font-bold bg-emerald-50 text-emerald-800 px-3 py-1 rounded-full border border-emerald-200" id="stepCounterText">
+                        100% Interactivo
+                    </span>
+                </div>
+
+                <!-- CARD 1: TRANSPORTE -->
+                <div class="eco-card-subtle p-4 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <label class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-route text-emerald-600"></i>
+                            <span id="transTitle">1. Transporte Principal al Colegio</span>
+                        </label>
+                        <span class="text-xs text-slate-500 font-mono" id="transFactorHint">0.192 kg CO₂/km</span>
+                    </div>
+
+                    <!-- Mode Selector Buttons Grid -->
+                    <div class="grid grid-cols-2 gap-2.5" id="transportModeGrid">
+                        <button type="button" onclick="setTransportMode('walk')" id="mode-walk"
+                                class="transport-tile p-3 text-left flex items-center space-x-3">
+                            <i class="fa-solid fa-person-biking text-xl text-emerald-600"></i>
+                            <div>
+                                <div class="font-bold text-xs text-slate-800" id="modeWalkText">Caminata / Bici</div>
+                                <div class="text-[10px] text-slate-500">0.00 kg CO₂/km</div>
+                            </div>
+                        </button>
+                        
+                        <button type="button" onclick="setTransportMode('bus')" id="mode-bus"
+                                class="transport-tile p-3 text-left flex items-center space-x-3">
+                            <i class="fa-solid fa-bus text-xl text-blue-600"></i>
+                            <div>
+                                <div class="font-bold text-xs text-slate-800" id="modeBusText">Bus Escolar / Bus</div>
+                                <div class="text-[10px] text-slate-500">0.089 kg CO₂/km</div>
+                            </div>
+                        </button>
+
+                        <button type="button" onclick="setTransportMode('carpool')" id="mode-carpool"
+                                class="transport-tile p-3 text-left flex items-center space-x-3">
+                            <i class="fa-solid fa-car-side text-xl text-teal-600"></i>
+                            <div>
+                                <div class="font-bold text-xs text-slate-800" id="modeCarpoolText">Auto Compartido</div>
+                                <div class="text-[10px] text-slate-500">0.096 kg CO₂/km</div>
+                            </div>
+                        </button>
+
+                        <button type="button" onclick="setTransportMode('car')" id="mode-car"
+                                class="transport-tile active p-3 text-left flex items-center space-x-3">
+                            <i class="fa-solid fa-car text-xl text-rose-600"></i>
+                            <div>
+                                <div class="font-bold text-xs text-slate-800" id="modeCarText">Auto Particular</div>
+                                <div class="text-[10px] text-slate-500">0.192 kg CO₂/km</div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Distance Slider + Stepper Input -->
+                    <div class="space-y-2 pt-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-700 font-semibold" id="distanceLabel">Kilometraje semanal estimado (ida y vuelta):</span>
+                            <div class="flex items-center space-x-1 font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-lg border border-emerald-300">
+                                <input type="number" id="distanceInput" value="45" min="0" max="400" 
+                                       oninput="updateDistance(this.value)"
+                                       class="w-12 text-right bg-transparent focus:outline-none text-xs font-mono font-black" aria-label="Kilometraje semanal">
+                                <span>km</span>
+                            </div>
+                        </div>
+                        <input type="range" id="distanceSlider" min="0" max="250" value="45" 
+                               oninput="updateDistance(this.value)"
+                               class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" aria-label="Deslizador de distancia">
+                        <div class="flex justify-between text-[10px] text-slate-400 font-mono font-medium">
+                            <span>0 km</span>
+                            <span>50 km</span>
+                            <span>100 km</span>
+                            <span>150 km</span>
+                            <span>250+ km</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 2: PAPEL -->
+                <div class="eco-card-subtle p-4 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <label class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-copy text-amber-600"></i>
+                            <span id="paperTitle">2. Consumo Semanal de Papel</span>
+                        </label>
+                        <span class="text-xs text-slate-500 font-mono">~0.005 kg CO₂/hoja</span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-700 font-semibold" id="paperLabel">Hojas / páginas de libreta usadas:</span>
+                            <div class="flex items-center space-x-1 font-bold text-amber-900 bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-300">
+                                <input type="number" id="paperInput" value="30" min="0" max="200" 
+                                       oninput="updatePaper(this.value)"
+                                       class="w-10 text-right bg-transparent focus:outline-none text-xs font-mono font-black" aria-label="Cantidad de hojas de papel">
+                                <span id="paperUnitText">hojas</span>
+                            </div>
+                        </div>
+                        <input type="range" id="paperSlider" min="0" max="150" value="30" 
+                               oninput="updatePaper(this.value)"
+                               class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" aria-label="Deslizador de hojas de papel">
+                    </div>
+
+                    <!-- Paper Type Selector -->
+                    <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-200">
+                        <span class="text-slate-700 font-semibold" id="paperTypeLabel">Tipo de papel:</span>
+                        <select id="paperTypeSelect" onchange="updatePaperType(this.value)"
+                                class="eco-select font-semibold text-xs py-1">
+                            <option value="virgin" id="optVirgin">Papel Estándar (Virgen)</option>
+                            <option value="recycled" id="optRecycled">100% Reciclado (-60% impacto)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- CARD 3: SEPARACIÓN DE RESIDUOS -->
+                <div class="eco-card-subtle p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-recycle text-emerald-600"></i>
+                            <span id="recycleTitle">3. Separación de Residuos en el Colegio / Casa</span>
+                        </label>
+                        <span class="text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300" id="bonusTag">+15 pts c/u</span>
+                    </div>
+
+                    <p class="text-xs text-slate-600" id="recycleSubtitle">Marca los materiales que separas activamente esta semana:</p>
+
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <label class="flex items-center p-2.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400 transition">
+                            <input type="checkbox" id="checkPlastic" checked onchange="updateRecycling()"
+                                   class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300">
+                            <span class="ml-2.5 text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                <i class="fa-solid fa-bottle-water text-blue-500"></i> <span id="recPlastic">Plásticos / Botellas</span>
+                            </span>
+                        </label>
+
+                        <label class="flex items-center p-2.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400 transition">
+                            <input type="checkbox" id="checkPaper" checked onchange="updateRecycling()"
+                                   class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300">
+                            <span class="ml-2.5 text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                <i class="fa-solid fa-box-archive text-amber-600"></i> <span id="recPaper">Papel y Cartón</span>
+                            </span>
+                        </label>
+
+                        <label class="flex items-center p-2.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400 transition">
+                            <input type="checkbox" id="checkOrganic" onchange="updateRecycling()"
+                                   class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300">
+                            <span class="ml-2.5 text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                <i class="fa-solid fa-apple-whole text-emerald-600"></i> <span id="recOrganic">Residuos Orgánicos</span>
+                            </span>
+                        </label>
+
+                        <label class="flex items-center p-2.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400 transition">
+                            <input type="checkbox" id="checkEwaste" onchange="updateRecycling()"
+                                   class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300">
+                            <span class="ml-2.5 text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                <i class="fa-solid fa-plug text-purple-600"></i> <span id="recEwaste">Electrónicos / Pilas</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- CARD 4: COMPROMISOS ADICIONALES -->
+                <div class="eco-card-subtle p-4 space-y-3">
+                    <label class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-award text-emerald-600"></i>
+                        <span id="habitsTitle">4. Compromisos Adicionales (+10 pts)</span>
+                    </label>
+
+                    <div class="space-y-2">
+                        <label class="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400 transition">
+                            <span class="text-xs text-slate-800 font-semibold flex items-center gap-2">
+                                <i class="fa-solid fa-glass-water text-cyan-600"></i>
+                                <span id="habitBottle">Uso termo/botella reutilizable a diario</span>
+                            </span>
+                            <input type="checkbox" id="checkBottle" checked onchange="updateHabits()" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300">
+                        </label>
+
+                        <label class="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400 transition">
+                            <span class="text-xs text-slate-800 font-semibold flex items-center gap-2">
+                                <i class="fa-solid fa-power-off text-amber-500"></i>
+                                <span id="habitOff">Apago luces y equipos al salir del aula</span>
+                            </span>
+                            <input type="checkbox" id="checkOff" onchange="updateHabits()" class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- RE-CALCULATE / RESET BUTTON -->
+                <button type="button" id="btn-calcular" onclick="recalculate()" 
+                        class="btn-eco-primary w-full py-4 text-base flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-calculator"></i>
+                    <span id="btnCalcularText">Calcular Impacto Semanal</span>
+                </button>
+
+                <button onclick="resetCalculator()" 
+                        class="w-full text-xs text-slate-500 hover:text-rose-600 transition font-bold py-2 border border-dashed border-slate-300 hover:border-rose-300 rounded-xl flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate-left"></i> <span id="resetBtnText">Restablecer Formulario</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- RIGHT COLUMN: RESULTADOS Y DASHBOARD DE CONTROL (7 COLS) -->
+        <section class="lg:col-span-7 space-y-6" aria-label="Resultados y Panel de Control Sostenible">
+            
+            <!-- MAIN METRIC CARDS GRID -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+                
+                <!-- Metric 1: Weekly Carbon Footprint -->
+                <div class="eco-card p-4 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute -right-3 -top-3 w-14 h-14 bg-rose-100/60 rounded-full flex items-center justify-center text-rose-500">
+                        <i class="fa-solid fa-cloud text-xl"></i>
+                    </div>
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500" id="cardCo2Title">Huella CO₂</span>
+                    <div class="my-2">
+                        <span id="valCo2Weekly" class="text-2xl sm:text-3xl font-black text-slate-900 font-mono">0.0</span>
+                        <span class="text-[11px] font-bold text-slate-500 block">kg CO₂e/sem</span>
+                    </div>
+                    <span id="badgeCo2Status" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 w-max">
+                        Evaluando...
+                    </span>
+                </div>
+
+                <!-- Metric 2: Eco-Points Gamification Score Hero Card -->
+                <div class="bg-gradient-to-br from-emerald-700 via-emerald-800 to-emerald-950 text-white p-4 rounded-3xl shadow-lg flex flex-col justify-between relative overflow-hidden ring-2 ring-emerald-500/30">
+                    <div class="absolute -right-3 -top-3 w-14 h-14 bg-white/10 rounded-full flex items-center justify-center text-emerald-200">
+                        <i class="fa-solid fa-star text-xl"></i>
+                    </div>
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-200" id="cardPointsTitle">Eco-Points</span>
+                    <div class="my-2 flex items-baseline space-x-1">
+                        <span id="valEcoPoints" class="text-3xl sm:text-4xl font-black text-white font-mono">0</span>
+                        <span class="text-xs font-bold text-emerald-200">/ 100</span>
+                    </div>
+                    <div class="w-full bg-emerald-950/80 rounded-full h-2 overflow-hidden border border-emerald-600/40">
+                        <div id="pointsProgressBar" class="bg-gradient-to-r from-emerald-300 to-lime-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Metric 3: Annual Projection -->
+                <div class="eco-card p-4 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute -right-3 -top-3 w-14 h-14 bg-blue-100/60 rounded-full flex items-center justify-center text-blue-500">
+                        <i class="fa-solid fa-calendar-days text-xl"></i>
+                    </div>
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500" id="cardAnnualTitle">Proyección Anual</span>
+                    <div class="my-2">
+                        <span id="valCo2Annual" class="text-2xl sm:text-3xl font-black text-slate-900 font-mono">0.00</span>
+                        <span class="text-[11px] font-bold text-slate-500 block" id="annualUnitText">Tons CO₂e/año</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 font-semibold" id="annualCalcSub">Año escolar (52 sem)</span>
+                </div>
+
+                <!-- Metric 4: Trees Neutralization Count -->
+                <div class="eco-card p-4 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute -right-3 -top-3 w-14 h-14 bg-emerald-100/60 rounded-full flex items-center justify-center text-emerald-600">
+                        <i class="fa-solid fa-tree text-xl"></i>
+                    </div>
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500" id="cardTreesTitle">Compensación</span>
+                    <div class="my-2">
+                        <span id="valTreesNeeded" class="text-2xl sm:text-3xl font-black text-emerald-800 font-mono">0</span>
+                        <span class="text-[11px] font-bold text-slate-500 block" id="treesUnitText">árboles/año</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 font-semibold" id="treesSubText">1 árbol ≈ 21.7kg CO₂</span>
+                </div>
+            </div>
+
+            <!-- ECO BADGE STATUS CARD -->
+            <div id="ecoBadgeCard" class="eco-card p-5 flex flex-col sm:flex-row items-center gap-4 transition-all duration-300">
+                <div id="badgeIconContainer" class="w-16 h-16 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-3xl shrink-0 shadow-inner">
+                    <i class="fa-solid fa-medal"></i>
+                </div>
+                <div class="flex-1 text-center sm:text-left space-y-1">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <span class="text-xs font-black uppercase tracking-widest text-slate-400" id="badgeCategoryTag">Nivel Alcanzado:</span>
+                        <h3 id="badgeTitleText" class="text-lg font-black text-slate-900">Aprendiz Ecológico</h3>
+                    </div>
+                    <p id="badgeDescText" class="text-xs text-slate-600 leading-relaxed">
+                        Estás dando tus primeros pasos. Aplica las recomendaciones para alcanzar el nivel Eco Guardián.
+                    </p>
+                </div>
+            </div>
+
+            <!-- CHARTS SECTION: BREAKDOWN & BENCHMARK -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Chart 1: CO2 Breakdown Doughnut -->
+                <div class="eco-card p-5 space-y-3 flex flex-col justify-between">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <h4 class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-2" id="chartBreakdownHeading">
+                            <i class="fa-solid fa-chart-pie text-emerald-600"></i> Desglose de Emisiones
+                        </h4>
+                        <span class="text-[10px] text-slate-400 font-mono font-bold">kg CO₂e</span>
+                    </div>
+                    <div class="relative w-full h-48 flex items-center justify-center">
+                        <canvas id="breakdownChart"></canvas>
+                    </div>
+                    <p class="text-[11px] text-center text-slate-500 italic font-medium" id="chart1Footer">
+                        El transporte suele ser la principal fuente de emisiones.
+                    </p>
+                </div>
+
+                <!-- Chart 2: Benchmark Bar Chart -->
+                <div class="eco-card p-5 space-y-3 flex flex-col justify-between">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <h4 class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-2" id="chartBenchmarkHeading">
+                            <i class="fa-solid fa-chart-column text-emerald-600"></i> Comparativa Colegio
+                        </h4>
+                        <span class="text-[10px] text-slate-400 font-mono font-bold">vs Metas</span>
+                    </div>
+                    <div class="relative w-full h-48 flex items-center justify-center">
+                        <canvas id="benchmarkChart"></canvas>
+                    </div>
+                    <p class="text-[11px] text-center text-slate-500 italic font-medium" id="chart2Footer">
+                        Meta institucional: Mantenerse por debajo de 4.0 kg CO₂e/semana.
+                    </p>
+                </div>
+            </div>
+
+            <!-- ACTIONABLE PERSONAL RECOMMENDATIONS -->
+            <div class="eco-card p-6 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2" id="tipsHeader">
+                        <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                        Recomendaciones Personalizadas para Ti
+                    </h3>
+                    <span class="text-xs text-emerald-800 font-bold bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200" id="tipsCountTag">
+                        Acciones Clave
+                    </span>
+                </div>
+
+                <div id="tipsContainer" class="space-y-3">
+                    <!-- Dynamic Recommendation Cards inserted here -->
+                </div>
+            </div>
+
+            <!-- EXPORT REPORT BUTTON -->
+            <div class="pt-2">
+                <button onclick="openPrintPreview()" 
+                        class="btn-eco-primary w-full py-4 px-6 text-sm flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-file-pdf text-lg"></i>
+                    <span id="btnExportText">Exportar / Imprimir Reporte PDF</span>
+                </button>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- FOOTER (NO PRINT) -->
+    <footer class="no-print bg-emerald-950 text-emerald-200/80 text-xs py-8 border-t border-emerald-800 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-xl bg-emerald-800 flex items-center justify-center text-emerald-300 font-bold">
+                    <i class="fa-solid fa-leaf"></i>
+                </div>
+                <div>
+                    <div class="font-bold text-white">Colegio Bolívar - Programa de Sostenibilidad Ambiental</div>
+                    <div class="text-[11px] text-emerald-300/70" id="footerSub">Diseñado para la comunidad académica. Cumple con estándares ISO 14064 y WCAG 2.1 AA.</div>
+                </div>
+            </div>
+            <div class="text-center md:text-right text-emerald-400/70">
+                <span>Factors: IPCC & GHG Protocol 2026</span>
+                <span class="mx-2">|</span>
+                <span id="footerVersion">v2.4 Final Green UI</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- PRINTABLE REPORT MODAL (NO PRINT) -->
+    <div id="printableReportModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden overflow-y-auto p-4 sm:p-8 no-print flex items-center justify-center">
+        
+        <div class="bg-white text-slate-900 w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border border-slate-200 my-auto flex flex-col max-h-[90vh]">
+            
+            <!-- Modal Toolbar -->
+            <div class="bg-emerald-950 text-white px-6 py-4 flex items-center justify-between border-b border-emerald-800 shrink-0">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-print text-emerald-400 text-lg"></i>
+                    <span class="font-bold text-sm" id="modalTitle">Vista Previa del Reporte Institucional</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="triggerActualPrint()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition flex items-center gap-2">
+                        <i class="fa-solid fa-print"></i> <span id="modalPrintBtn">Imprimir / Guardar PDF</span>
+                    </button>
+                    <button onclick="closePrintPreview()" class="text-emerald-300 hover:text-white text-lg p-1">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Report Body Content -->
+            <div class="p-8 overflow-y-auto space-y-6 bg-white font-sans text-slate-800" id="reportPaperContent">
+                
+                <!-- Report Header -->
+                <div class="flex items-start justify-between border-b-2 border-emerald-800 pb-4">
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-emerald-900 text-white font-bold text-xs px-3 py-1 rounded-md tracking-wider uppercase">Colegio Bolívar</span>
+                            <span class="text-xs text-slate-500 font-semibold" id="repTagline">Oficina de Gestión Ambiental Escolar</span>
+                        </div>
+                        <h2 class="text-2xl font-black text-slate-900 tracking-tight" id="repMainTitle">
+                            REPORTE DE HUELLA DE CARBONO Y ECO-POINTS
+                        </h2>
+                        <p class="text-xs text-slate-500" id="repSubTitle">
+                            Evaluación semanal individual de impacto ecológico y compromisos sostenibles.
+                        </p>
+                    </div>
+                    <div class="text-right space-y-1">
+                        <div class="text-xs text-slate-500" id="repDateLabel">Fecha de Emisión:</div>
+                        <div class="font-mono text-sm font-bold text-slate-900" id="repDateVal">11/11/2026</div>
+                        <div class="inline-block bg-emerald-50 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded border border-emerald-200" id="repRoleVal">
+                            Rol: Estudiante
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metrics Summary Grid -->
+                <div class="grid grid-cols-4 gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center">
+                    <div>
+                        <div class="text-[10px] font-bold uppercase text-slate-500" id="repMetric1Title">Emisiones Semanales</div>
+                        <div class="text-xl font-black text-slate-900 font-mono" id="repCo2Val">0.0 kg</div>
+                        <div class="text-[9px] text-slate-500">CO₂ equivalente</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-bold uppercase text-slate-500" id="repMetric2Title">Puntaje Eco-Points</div>
+                        <div class="text-xl font-black text-emerald-700 font-mono" id="repPointsVal">85 / 100</div>
+                        <div class="text-[9px] text-slate-500" id="repPointsSub">Calificación verde</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-bold uppercase text-slate-500" id="repMetric3Title">Proyección Anual</div>
+                        <div class="text-xl font-black text-slate-900 font-mono" id="repAnnualVal">0.00 t</div>
+                        <div class="text-[9px] text-slate-500">Tons CO₂/año</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-bold uppercase text-slate-500" id="repMetric4Title">Árboles Necesarios</div>
+                        <div class="text-xl font-black text-emerald-800 font-mono" id="repTreesVal">0</div>
+                        <div class="text-[9px] text-slate-500" id="repTreesSub">Para neutralizar</div>
+                    </div>
+                </div>
+
+                <!-- Table Breakdown -->
+                <div class="space-y-3">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 border-b pb-1" id="repDetailHeading">
+                        1. Detalle de Datos Evaluados
+                    </h3>
+                    <table class="w-full text-xs text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 border-b border-slate-200">
+                                <th class="p-2 font-bold" id="thCategory">Categoría</th>
+                                <th class="p-2 font-bold" id="thHabit">Hábito Reportado</th>
+                                <th class="p-2 font-bold" id="thFactor">Factor de Emisión / Impacto</th>
+                                <th class="p-2 font-bold text-right" id="thCo2">CO₂ Estimado</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100" id="repTableBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Badge & Commitments -->
+                <div class="grid grid-cols-2 gap-4 pt-2">
+                    <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
+                        <div class="text-xs font-bold text-slate-700 uppercase" id="repBadgeHeader">2. Nivel Ecológico Asignado</div>
+                        <div class="flex items-center space-x-3">
+                            <div id="repBadgeIcon" class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-lg font-bold">
+                                <i class="fa-solid fa-medal"></i>
+                            </div>
+                            <div>
+                                <div id="repBadgeTitle" class="font-black text-slate-900 text-sm">Eco Guardián</div>
+                                <div id="repBadgeSub" class="text-[11px] text-slate-600">Comportamiento altamente sostenible.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
+                        <div class="text-xs font-bold text-slate-700 uppercase" id="repCommitHeader">3. Compromisos para la Próxima Semana</div>
+                        <ul id="repCommitList" class="text-[11px] text-slate-600 space-y-1 list-disc list-inside">
+                            <!-- Populated dynamically -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Academic Reflection Prompt & Signatures -->
+                <div class="border-t border-slate-200 pt-4 space-y-6">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-800 uppercase" id="repReflectionLabel">
+                            4. Reflexión Académica (Para actividades de clase o entregas):
+                        </label>
+                        <div class="w-full h-16 p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-400 italic">
+                            [Escribe aquí tu reflexión sobre cómo puedes reducir 1 kg de CO₂ adicional la próxima semana...]
+                        </div>
+                    </div>
+
+                    <!-- Signatures Block -->
+                    <div class="grid grid-cols-2 gap-12 pt-6">
+                        <div class="border-t border-slate-400 text-center pt-2">
+                            <div class="text-xs font-bold text-slate-800" id="repSignStudent">Firma del Estudiante / Usuario</div>
+                            <div class="text-[10px] text-slate-500" id="repSignDate">Fecha: ____ / ____ / 2026</div>
+                        </div>
+                        <div class="border-t border-slate-400 text-center pt-2">
+                            <div class="text-xs font-bold text-slate-800" id="repSignTeacher">Sello / Firma Docente o Tutor</div>
+                            <div class="text-[10px] text-slate-500" id="repSignScore">Eco-Points Validados</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- DIRECT NATIVE PRINT CONTAINER -->
+    <div class="print-only p-8 space-y-6 bg-white font-sans text-slate-900" id="directPrintArea"></div>
+
+
+    <!-- APPLICATION JAVASCRIPT LOGIC -->
+    <script>
+        /**
+         * BOLÍVAR ECO-CALCULATOR ENGINE
+         * State management, emission calculations, i18n & dynamic visual rendering
+         */
+
+        const EMISSION_FACTORS = {
+            transport: {
+                walk: 0.000,
+                bus: 0.089,
+                carpool: 0.096,
+                car: 0.192
+            },
+            paper: {
+                virgin: 0.005,   // 5 grams per sheet
+                recycled: 0.002  // 2 grams per sheet (-60% offset)
+            },
+            recyclingOffsetPerCategory: 0.50 // 0.50 kg CO2 offset per active recycling category
+        };
+
+        const state = {
+            lang: 'es',
+            role: 'student',
+            transportMode: 'car',
+            distance: 45,
+            paperSheets: 30,
+            paperType: 'virgin',
+            recycling: {
+                plastic: true,
+                paper: true,
+                organic: false,
+                ewaste: false
+            },
+            habits: {
+                bottle: true,
+                offDevices: false
+            }
+        };
+
+        const i18n = {
+            es: {
+                heroTitle: "Mide tu Huella de Carbono Semanal y Gana Eco-Points",
+                heroSubtitle: "Calcula el impacto ambiental de tus desplazamientos al colegio, consumo de papel y hábitos de reciclaje. ¡Consigue insignias y lidera la transformación sostenible!",
+                presetsLabel: "Cargar Ejemplo:",
+                calculatorTag: "Paso a Paso",
+                calculatorHeader: "Calculadora Semanal",
+                stepCounterText: "100% Interactivo",
+                transTitle: "1. Transporte Principal al Colegio",
+                modeWalkText: "Caminata / Bici",
+                modeBusText: "Bus Escolar / Bus",
+                modeCarpoolText: "Auto Compartido",
+                modeCarText: "Auto Particular",
+                distanceLabel: "Kilometraje semanal estimado (ida y vuelta):",
+                paperTitle: "2. Consumo Semanal de Papel",
+                paperLabel: "Hojas / páginas de libreta usadas:",
+                paperUnitText: "hojas",
+                paperTypeLabel: "Tipo de papel:",
+                optVirgin: "Papel Estándar (Virgen)",
+                optRecycled: "100% Reciclado (-60% impacto)",
+                recycleTitle: "3. Separación de Residuos en el Colegio / Casa",
+                bonusTag: "+15 pts c/u",
+                recycleSubtitle: "Marca los materiales que separas activamente esta semana:",
+                recPlastic: "Plásticos / Botellas",
+                recPaper: "Papel y Cartón",
+                recOrganic: "Residuos Orgánicos",
+                recEwaste: "Electrónicos / Pilas",
+                habitsTitle: "4. Compromisos Adicionales (+10 pts)",
+                habitBottle: "Uso termo/botella reutilizable a diario",
+                habitOff: "Apago luces y equipos al salir del aula",
+                btnCalcularText: "Calcular Impacto Semanal",
+                resetBtnText: "Restablecer Formulario",
+                cardCo2Title: "Huella CO₂",
+                cardPointsTitle: "Eco-Points",
+                cardAnnualTitle: "Proyección Anual",
+                annualUnitText: "Tons CO₂e/año",
+                annualCalcSub: "Año escolar (52 sem)",
+                cardTreesTitle: "Compensación",
+                treesUnitText: "árboles/año",
+                treesSubText: "1 árbol ≈ 21.7kg CO₂",
+                badgeCategoryTag: "Nivel Alcanzado:",
+                chartBreakdownHeading: "Desglose de Emisiones",
+                chartBenchmarkHeading: "Comparativa Colegio",
+                chart1Footer: "El transporte suele ser la principal fuente de emisiones.",
+                chart2Footer: "Meta institucional: Mantenerse por debajo de 4.0 kg CO₂e/semana.",
+                tipsHeader: "Recomendaciones Personalizadas para Ti",
+                tipsCountTag: "Acciones Clave",
+                btnExportText: "Exportar / Imprimir Reporte PDF",
+                footerSub: "Diseñado para la comunidad académica. Cumple con estándares ISO 14064 y WCAG 2.1 AA.",
+                roleLabelText: "Rol:",
+                modalTitle: "Vista Previa del Reporte Institucional",
+                modalPrintBtn: "Imprimir / Guardar PDF",
+                repTagline: "Oficina de Gestión Ambiental Escolar",
+                repMainTitle: "REPORTE DE HUELLA DE CARBONO Y ECO-POINTS",
+                repSubTitle: "Evaluación semanal individual de impacto ecológico y compromisos sostenibles.",
+                repDateLabel: "Fecha de Emisión:",
+                repRoleVal: "Rol:",
+                repMetric1Title: "Emisiones Semanales",
+                repMetric2Title: "Puntaje Eco-Points",
+                repMetric3Title: "Proyección Anual",
+                repMetric4Title: "Árboles Necesarios",
+                repPointsSub: "Calificación verde",
+                repTreesSub: "Para neutralizar",
+                repDetailHeading: "1. Detalle de Datos Evaluados",
+                thCategory: "Categoría",
+                thHabit: "Hábito Reportado",
+                thFactor: "Factor de Emisión / Impacto",
+                thCo2: "CO₂ Estimado",
+                repBadgeHeader: "2. Nivel Ecológico Asignado",
+                repCommitHeader: "3. Compromisos para la Próxima Semana",
+                repReflectionLabel: "4. Reflexión Académica (Para actividades de clase o entregas):",
+                repSignStudent: "Firma del Estudiante / Usuario",
+                repSignDate: "Fecha: ____ / ____ / 2026",
+                repSignTeacher: "Sello / Firma Docente o Tutor",
+                repSignScore: "Eco-Points Validados",
+                badges: {
+                    guardian: {
+                        name: "Eco Guardián",
+                        desc: "¡Excelente! Tus hábitos son un modelo de sostenibilidad para la comunidad Bolívar."
+                    },
+                    ally: {
+                        name: "Aliado Verde",
+                        desc: "¡Buen trabajo! Estás muy cerca de la máxima eficiencia ecológica."
+                    },
+                    apprentice: {
+                        name: "Aprendiz Ecológico",
+                        desc: "Vas por buen camino, pero hay margen significativo para reducir tu huella."
+                    },
+                    alert: {
+                        name: "Alerta de Huella",
+                        desc: "Tu huella es elevada. Revisa el plan de acción para transformar tus hábitos."
+                    }
+                }
+            },
+            en: {
+                heroTitle: "Measure Your Weekly Carbon Footprint & Earn Eco-Points",
+                heroSubtitle: "Calculate the environmental impact of your school commute, paper usage, and recycling habits. Earn badges and lead sustainable change!",
+                presetsLabel: "Load Preset:",
+                calculatorTag: "Step-by-Step",
+                calculatorHeader: "Weekly Calculator",
+                stepCounterText: "100% Interactive",
+                transTitle: "1. Primary School Commute",
+                modeWalkText: "Walk / Bicycle",
+                modeBusText: "School / Public Bus",
+                modeCarpoolText: "Carpool",
+                modeCarText: "Private Car",
+                distanceLabel: "Estimated weekly distance (round trip total):",
+                paperTitle: "2. Weekly Paper Usage",
+                paperLabel: "Sheets / notebook pages used:",
+                paperUnitText: "sheets",
+                paperTypeLabel: "Paper Type:",
+                optVirgin: "Standard Paper (Virgin)",
+                optRecycled: "100% Recycled (-60% impact)",
+                recycleTitle: "3. Waste Separation at School / Home",
+                bonusTag: "+15 pts ea.",
+                recycleSubtitle: "Select materials you actively separate this week:",
+                recPlastic: "Plastics & PET Bottles",
+                recPaper: "Paper & Cardboard",
+                recOrganic: "Organic Waste",
+                recEwaste: "E-Waste / Batteries",
+                habitsTitle: "4. Additional Eco-Commitments (+10 pts)",
+                habitBottle: "I use a reusable water bottle daily",
+                habitOff: "I turn off lights and devices when leaving",
+                btnCalcularText: "Calculate Weekly Impact",
+                resetBtnText: "Reset Form",
+                cardCo2Title: "CO₂ Footprint",
+                cardPointsTitle: "Eco-Points",
+                cardAnnualTitle: "Annual Projection",
+                annualUnitText: "Tons CO₂e/year",
+                annualCalcSub: "School year (52 weeks)",
+                cardTreesTitle: "Offset Target",
+                treesUnitText: "trees/year",
+                treesSubText: "1 tree ≈ 21.7kg CO₂",
+                badgeCategoryTag: "Achieved Tier:",
+                chartBreakdownHeading: "Emission Breakdown",
+                chartBenchmarkHeading: "School Benchmark",
+                chart1Footer: "Transportation is typically the main driver of emissions.",
+                chart2Footer: "Institutional target: Keep emissions under 4.0 kg CO₂e/week.",
+                tipsHeader: "Personalized Recommendations for You",
+                tipsCountTag: "Key Actions",
+                btnExportText: "Export / Print PDF Report",
+                footerSub: "Designed for the academic community. Complies with ISO 14064 and WCAG 2.1 AA.",
+                roleLabelText: "Role:",
+                modalTitle: "Institutional Report Preview",
+                modalPrintBtn: "Print / Save PDF",
+                repTagline: "School Environmental Management Office",
+                repMainTitle: "CARBON FOOTPRINT & ECO-POINTS REPORT",
+                repSubTitle: "Weekly individual evaluation of ecological impact and sustainable commitments.",
+                repDateLabel: "Date of Issue:",
+                repRoleVal: "Role:",
+                repMetric1Title: "Weekly Emissions",
+                repMetric2Title: "Eco-Points Score",
+                repMetric3Title: "Annual Projection",
+                repMetric4Title: "Trees Needed",
+                repPointsSub: "Green rating",
+                repTreesSub: "To offset",
+                repDetailHeading: "1. Evaluated Data Detail",
+                thCategory: "Category",
+                thHabit: "Reported Habit",
+                thFactor: "Emission Factor / Impact",
+                thCo2: "Estimated CO₂",
+                repBadgeHeader: "2. Assigned Eco Tier",
+                repCommitHeader: "3. Commitments for Next Week",
+                repReflectionLabel: "4. Academic Reflection (For classroom assignment submissions):",
+                repSignStudent: "Student / User Signature",
+                repSignDate: "Date: ____ / ____ / 2026",
+                repSignTeacher: "Teacher / Supervisor Stamp",
+                repSignScore: "Validated Eco-Points",
+                badges: {
+                    guardian: {
+                        name: "Eco Guardian",
+                        desc: "Outstanding! Your habits are a benchmark of sustainability for the Bolívar community."
+                    },
+                    ally: {
+                        name: "Green Ally",
+                        desc: "Great job! You are very close to maximum ecological efficiency."
+                    },
+                    apprentice: {
+                        name: "Eco Apprentice",
+                        desc: "You are on the right track, but there is clear room to reduce your impact."
+                    },
+                    alert: {
+                        name: "High Impact Alert",
+                        desc: "Your footprint is elevated. Follow the actionable plan to transform your habits."
+                    }
+                }
+            }
+        };
+
+        let breakdownChartInstance = null;
+        let benchmarkChartInstance = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            recalculate();
+            updateUIStrings();
+        });
+
+        function toggleLanguage() {
+            state.lang = state.lang === 'es' ? 'en' : 'es';
+            document.getElementById('currentLangTag').textContent = state.lang.toUpperCase();
+            document.getElementById('altLangTag').textContent = state.lang === 'es' ? 'EN' : 'ES';
+            updateUIStrings();
+            recalculate();
+        }
+
+        function updateUIStrings() {
+            const dict = i18n[state.lang];
+            Object.keys(dict).forEach(key => {
+                if (key === 'badges') return;
+                const el = document.getElementById(key);
+                if (el) el.textContent = dict[key];
+            });
+
+            document.getElementById('optVirgin').textContent = dict.optVirgin;
+            document.getElementById('optRecycled').textContent = dict.optRecycled;
+        }
+
+        function updateRole(newRole) {
+            state.role = newRole;
+            recalculate();
+        }
+
+        function loadPreset(type) {
+            if (type === 'eco') {
+                state.transportMode = 'walk';
+                state.distance = 15;
+                state.paperSheets = 10;
+                state.paperType = 'recycled';
+                state.recycling = { plastic: true, paper: true, organic: true, ewaste: true };
+                state.habits = { bottle: true, offDevices: true };
+            } else if (type === 'average') {
+                state.transportMode = 'bus';
+                state.distance = 40;
+                state.paperSheets = 35;
+                state.paperType = 'virgin';
+                state.recycling = { plastic: true, paper: true, organic: false, ewaste: false };
+                state.habits = { bottle: true, offDevices: false };
+            } else if (type === 'high') {
+                state.transportMode = 'car';
+                state.distance = 110;
+                state.paperSheets = 85;
+                state.paperType = 'virgin';
+                state.recycling = { plastic: false, paper: false, organic: false, ewaste: false };
+                state.habits = { bottle: false, offDevices: false };
+            }
+            syncFormWithState();
+            recalculate();
+        }
+
+        function syncFormWithState() {
+            setTransportModeUI(state.transportMode);
+            document.getElementById('distanceInput').value = state.distance;
+            document.getElementById('distanceSlider').value = state.distance;
+            document.getElementById('paperInput').value = state.paperSheets;
+            document.getElementById('paperSlider').value = state.paperSheets;
+            document.getElementById('paperTypeSelect').value = state.paperType;
+
+            document.getElementById('checkPlastic').checked = state.recycling.plastic;
+            document.getElementById('checkPaper').checked = state.recycling.paper;
+            document.getElementById('checkOrganic').checked = state.recycling.organic;
+            document.getElementById('checkEwaste').checked = state.recycling.ewaste;
+
+            document.getElementById('checkBottle').checked = state.habits.bottle;
+            document.getElementById('checkOff').checked = state.habits.offDevices;
+        }
+
+        function setTransportMode(mode) {
+            state.transportMode = mode;
+            setTransportModeUI(mode);
+            recalculate();
+        }
+
+        function setTransportModeUI(mode) {
+            ['walk', 'bus', 'carpool', 'car'].forEach(m => {
+                const btn = document.getElementById(`mode-${m}`);
+                if (m === mode) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            const factor = EMISSION_FACTORS.transport[mode];
+            document.getElementById('transFactorHint').textContent = `${factor.toFixed(3)} kg CO₂/km`;
+        }
+
+        function updateDistance(val) {
+            state.distance = Math.max(0, parseInt(val) || 0);
+            document.getElementById('distanceInput').value = state.distance;
+            document.getElementById('distanceSlider').value = state.distance;
+            recalculate();
+        }
+
+        function updatePaper(val) {
+            state.paperSheets = Math.max(0, parseInt(val) || 0);
+            document.getElementById('paperInput').value = state.paperSheets;
+            document.getElementById('paperSlider').value = state.paperSheets;
+            recalculate();
+        }
+
+        function updatePaperType(val) {
+            state.paperType = val;
+            recalculate();
+        }
+
+        function updateRecycling() {
+            state.recycling.plastic = document.getElementById('checkPlastic').checked;
+            state.recycling.paper = document.getElementById('checkPaper').checked;
+            state.recycling.organic = document.getElementById('checkOrganic').checked;
+            state.recycling.ewaste = document.getElementById('checkEwaste').checked;
+            recalculate();
+        }
+
+        function updateHabits() {
+            state.habits.bottle = document.getElementById('checkBottle').checked;
+            state.habits.offDevices = document.getElementById('checkOff').checked;
+            recalculate();
+        }
+
+        function resetCalculator() {
+            loadPreset('average');
+        }
+
+        function calculateCo2Penalty(netCo2) {
+            if (netCo2 <= 2) return 0;
+            if (netCo2 > 15) return (netCo2 - 2) * 3.0;
+            if (netCo2 > 8) return (netCo2 - 2) * 2.2;
+            return (netCo2 - 2) * 1.5;
+        }
+
+        function recalculate() {
+            const transFactor = EMISSION_FACTORS.transport[state.transportMode];
+            const co2Transport = state.distance * transFactor;
+
+            const paperFactor = EMISSION_FACTORS.paper[state.paperType];
+            const co2Paper = state.paperSheets * paperFactor;
+
+            const activeRecycledCount = Object.values(state.recycling).filter(Boolean).length;
+            const co2RecyclingOffset = activeRecycledCount * EMISSION_FACTORS.recyclingOffsetPerCategory;
+
+            const grossCo2 = co2Transport + co2Paper;
+            const netCo2Weekly = Math.max(0, grossCo2 - co2RecyclingOffset);
+
+            const annualTons = (netCo2Weekly * 52) / 1000;
+            const treesNeeded = Math.ceil((netCo2Weekly * 52) / 21.7);
+
+            let points = 70;
+            points += (activeRecycledCount * 10);
+
+            if (state.transportMode === 'walk') points += 20;
+            else if (state.transportMode === 'bus') points += 10;
+            else if (state.transportMode === 'carpool') points += 10;
+
+            if (state.habits.bottle) points += 5;
+            if (state.habits.offDevices) points += 5;
+
+            const co2Penalty = calculateCo2Penalty(netCo2Weekly);
+            points -= co2Penalty;
+
+            const ecoPointsScore = Math.min(100, Math.max(0, Math.round(points)));
+
+            document.getElementById('valCo2Weekly').textContent = netCo2Weekly.toFixed(1);
+            document.getElementById('valEcoPoints').textContent = ecoPointsScore;
+            document.getElementById('pointsProgressBar').style.width = `${ecoPointsScore}%`;
+            document.getElementById('valCo2Annual').textContent = annualTons.toFixed(2);
+            document.getElementById('valTreesNeeded').textContent = treesNeeded;
+
+            const badgeCo2 = document.getElementById('badgeCo2Status');
+            if (netCo2Weekly < 4.0) {
+                badgeCo2.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300";
+                badgeCo2.textContent = state.lang === 'es' ? 'Bajo Impacto' : 'Low Impact';
+            } else if (netCo2Weekly < 12.0) {
+                badgeCo2.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300";
+                badgeCo2.textContent = state.lang === 'es' ? 'Moderado' : 'Moderate';
+            } else {
+                badgeCo2.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300";
+                badgeCo2.textContent = state.lang === 'es' ? 'Alto Impacto' : 'High Impact';
+            }
+
+            updateBadgeTier(ecoPointsScore);
+            updateChartsData(co2Transport, co2Paper, co2RecyclingOffset, netCo2Weekly);
+            renderRecommendations(netCo2Weekly, co2Transport, co2Paper, activeRecycledCount);
+
+            if (ecoPointsScore >= 90 && Math.random() < 0.08) {
+                confetti({ particleCount: 40, spread: 55, origin: { y: 0.7 } });
+            }
+        }
+
+        function updateBadgeTier(score) {
+            const bDict = i18n[state.lang].badges;
+            let bKey = 'apprentice';
+            let iconClass = 'fa-medal';
+            let bgClass = 'bg-teal-100 text-teal-700 border-teal-300';
+
+            if (score >= 80) {
+                bKey = 'guardian';
+                iconClass = 'fa-crown';
+                bgClass = 'bg-amber-100 text-amber-600 border-amber-300';
+            } else if (score >= 60) {
+                bKey = 'ally';
+                iconClass = 'fa-seedling';
+                bgClass = 'bg-emerald-100 text-emerald-700 border-emerald-300';
+            } else if (score >= 35) {
+                bKey = 'apprentice';
+                iconClass = 'fa-award';
+                bgClass = 'bg-teal-100 text-teal-700 border-teal-300';
+            } else {
+                bKey = 'alert';
+                iconClass = 'fa-triangle-exclamation';
+                bgClass = 'bg-rose-100 text-rose-700 border-rose-300';
+            }
+
+            const info = bDict[bKey];
+            document.getElementById('badgeTitleText').textContent = info.name;
+            document.getElementById('badgeDescText').textContent = info.desc;
+            
+            const iconContainer = document.getElementById('badgeIconContainer');
+            iconContainer.className = `w-16 h-16 rounded-2xl ${bgClass} flex items-center justify-center text-3xl shrink-0 shadow-inner border`;
+            iconContainer.innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
+        }
+
+        function initCharts() {
+            const ctx1 = document.getElementById('breakdownChart').getContext('2d');
+            breakdownChartInstance = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Transporte', 'Papel', 'Descuento Reciclaje'],
+                    datasets: [{
+                        data: [5, 1, 1],
+                        backgroundColor: ['#059669', '#d97706', '#0d9488'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10, family: 'Plus Jakarta Sans' } } }
+                    },
+                    cutout: '70%'
+                }
+            });
+
+            const ctx2 = document.getElementById('benchmarkChart').getContext('2d');
+            benchmarkChartInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Tu Huella', 'Promedio Colegio', 'Meta Eco'],
+                    datasets: [{
+                        data: [6.5, 12.5, 3.5],
+                        backgroundColor: ['#059669', '#94a3b8', '#10b981'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 10, family: 'Plus Jakarta Sans' } } },
+                        x: { grid: { display: false }, ticks: { font: { size: 10, family: 'Plus Jakarta Sans' } } }
+                    }
+                }
+            });
+        }
+
+        function updateChartsData(co2Trans, co2Paper, co2Offset, netCo2) {
+            if (!breakdownChartInstance || !benchmarkChartInstance) return;
+
+            const isEs = state.lang === 'es';
+
+            breakdownChartInstance.data.labels = isEs 
+                ? ['Transporte', 'Consumo Papel', 'Offset Reciclaje']
+                : ['Transport', 'Paper Usage', 'Recycling Offset'];
+            breakdownChartInstance.data.datasets[0].data = [
+                parseFloat(co2Trans.toFixed(2)),
+                parseFloat(co2Paper.toFixed(2)),
+                parseFloat(co2Offset.toFixed(2))
+            ];
+            breakdownChartInstance.update();
+
+            benchmarkChartInstance.data.labels = isEs
+                ? ['Tu Huella', 'Promedio Colegio', 'Meta Eco']
+                : ['Your Footprint', 'School Avg', 'Eco Goal'];
+            benchmarkChartInstance.data.datasets[0].data = [
+                parseFloat(netCo2.toFixed(1)),
+                12.5,
+                3.5
+            ];
+            benchmarkChartInstance.update();
+        }
+
+        function renderRecommendations(netCo2, co2Trans, co2Paper, recycledCount) {
+            const container = document.getElementById('tipsContainer');
+            container.innerHTML = '';
+            const tips = [];
+            const isEs = state.lang === 'es';
+
+            if (state.transportMode === 'car' && state.distance > 20) {
+                tips.push({
+                    icon: 'fa-car-side',
+                    color: 'text-rose-600 bg-rose-50 border-rose-200',
+                    title: isEs ? 'Organiza Carpooling con compañeros' : 'Organize Carpooling with classmates',
+                    desc: isEs 
+                        ? `Compartir auto 2 días a la semana reduciría tu huella en aprox. ${(co2Trans * 0.4).toFixed(1)} kg CO₂e.`
+                        : `Sharing rides 2 days a week would reduce your footprint by approx. ${(co2Trans * 0.4).toFixed(1)} kg CO₂e.`
+                });
+            } else if (state.transportMode === 'bus') {
+                tips.push({
+                    icon: 'fa-bus',
+                    color: 'text-blue-600 bg-blue-50 border-blue-200',
+                    title: isEs ? 'Uso Eficiente del Bus Escolar' : 'Efficient School Bus Commute',
+                    desc: isEs 
+                        ? 'Estás optimizando el transporte colectivo. ¡Anima a más compañeros a usar la ruta!'
+                        : 'You are optimizing group transport. Encourage more classmates to ride the route!'
+                });
+            } else if (state.transportMode === 'walk') {
+                tips.push({
+                    icon: 'fa-person-biking',
+                    color: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+                    title: isEs ? '¡Movilidad Cero Emisiones!' : 'Zero Emission Mobility!',
+                    desc: isEs 
+                        ? 'Tu método de transporte no genera gases de efecto invernadero. ¡Excelente impacto!'
+                        : 'Your transport mode generates zero greenhouse gases. Outstanding impact!'
+                });
+            }
+
+            if (state.paperSheets > 40) {
+                tips.push({
+                    icon: 'fa-copy',
+                    color: 'text-amber-600 bg-amber-50 border-amber-200',
+                    title: isEs ? 'Digitalización de Apuntes' : 'Note Digitalization',
+                    desc: isEs 
+                        ? `Consumes ${state.paperSheets} hojas/semana. Utiliza cuadernos digitales o imprime por ambos lados.`
+                        : `You use ${state.paperSheets} sheets/week. Use digital notebooks or double-sided printing.`
+                });
+            }
+
+            if (recycledCount < 3) {
+                tips.push({
+                    icon: 'fa-recycle',
+                    color: 'text-teal-700 bg-teal-50 border-teal-200',
+                    title: isEs ? 'Amplía la Separación en la Fuente' : 'Expand Waste Separation',
+                    desc: isEs 
+                        ? 'Activa el reciclaje de orgánicos o electrónicos en los puntos ecológicos para ganar +15 Eco-Points.'
+                        : 'Activate organic or e-waste recycling at eco-stations to gain +15 Eco-Points.'
+                });
+            }
+
+            if (tips.length === 0 || netCo2 < 2.0) {
+                tips.push({
+                    icon: 'fa-seedling',
+                    color: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+                    title: isEs ? 'Líder en Sostenibilidad Bolívar' : 'Bolívar Sustainability Leader',
+                    desc: isEs 
+                        ? '¡Tu huella es excepcionalmente baja! Comparte tus hábitos e inspira a tu grupo escolar.'
+                        : 'Your footprint is exceptionally low! Share your habits and inspire your school group.'
+                });
+            }
+
+            tips.forEach(t => {
+                const card = document.createElement('div');
+                card.className = `p-3.5 rounded-2xl border ${t.color} flex items-start space-x-3 transition`;
+                card.innerHTML = `
+                    <div class="mt-0.5 text-base shrink-0">
+                        <i class="fa-solid ${t.icon}"></i>
+                    </div>
+                    <div class="space-y-0.5">
+                        <div class="text-xs font-bold text-slate-900">${t.title}</div>
+                        <div class="text-[11px] text-slate-600 leading-snug">${t.desc}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openPrintPreview() {
+            populateReportData();
+            document.getElementById('printableReportModal').classList.remove('hidden');
+        }
+
+        function closePrintPreview() {
+            document.getElementById('printableReportModal').classList.add('hidden');
+        }
+
+        function populateReportData() {
+            const isEs = state.lang === 'es';
+            const dict = i18n[state.lang];
+
+            document.getElementById('repDateVal').textContent = new Date().toLocaleDateString(isEs ? 'es-CO' : 'en-US');
+            document.getElementById('repRoleVal').textContent = `${dict.roleLabelText} ${state.role.toUpperCase()}`;
+
+            const netCo2 = document.getElementById('valCo2Weekly').textContent;
+            const points = document.getElementById('valEcoPoints').textContent;
+            const annual = document.getElementById('valCo2Annual').textContent;
+            const trees = document.getElementById('valTreesNeeded').textContent;
+
+            document.getElementById('repCo2Val').textContent = `${netCo2} kg`;
+            document.getElementById('repPointsVal').textContent = `${points} / 100`;
+            document.getElementById('repAnnualVal').textContent = `${annual} t`;
+            document.getElementById('repTreesVal').textContent = trees;
+
+            const tbody = document.getElementById('repTableBody');
+            tbody.innerHTML = '';
+
+            const transFactor = EMISSION_FACTORS.transport[state.transportMode];
+            const transCo2 = (state.distance * transFactor).toFixed(2);
+            const paperFactor = EMISSION_FACTORS.paper[state.paperType];
+            const paperCo2 = (state.paperSheets * paperFactor).toFixed(2);
+            const activeRecycledCount = Object.values(state.recycling).filter(Boolean).length;
+            const offsetCo2 = (activeRecycledCount * EMISSION_FACTORS.recyclingOffsetPerCategory).toFixed(2);
+
+            const rows = [
+                {
+                    cat: isEs ? 'Transporte' : 'Transportation',
+                    habit: `${state.transportMode.toUpperCase()} (${state.distance} km/sem)`,
+                    factor: `${transFactor.toFixed(3)} kg CO₂/km`,
+                    co2: `+${transCo2} kg`
+                },
+                {
+                    cat: isEs ? 'Consumo Papel' : 'Paper Usage',
+                    habit: `${state.paperSheets} ${isEs ? 'hojas' : 'sheets'} (${state.paperType})`,
+                    factor: `${paperFactor.toFixed(3)} kg CO₂/hoja`,
+                    co2: `+${paperCo2} kg`
+                },
+                {
+                    cat: isEs ? 'Reciclaje (Offset)' : 'Recycling Offset',
+                    habit: `${activeRecycledCount} ${isEs ? 'categorías activas' : 'active categories'}`,
+                    factor: `-0.50 kg CO₂ / cat`,
+                    co2: `-${offsetCo2} kg`
+                }
+            ];
+
+            rows.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-100 text-slate-700";
+                tr.innerHTML = `
+                    <td class="p-2 font-semibold">${r.cat}</td>
+                    <td class="p-2">${r.habit}</td>
+                    <td class="p-2 font-mono text-[11px]">${r.factor}</td>
+                    <td class="p-2 text-right font-mono font-bold">${r.co2}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('repBadgeTitle').textContent = document.getElementById('badgeTitleText').textContent;
+            document.getElementById('repBadgeSub').textContent = document.getElementById('badgeDescText').textContent;
+
+            const commitList = document.getElementById('repCommitList');
+            commitList.innerHTML = '';
+            
+            const defaultCommits = isEs ? [
+                "Utilizar transporte compartido o bus escolar al menos 3 días por semana.",
+                "Reducir el consumo de hojas impresas y priorizar archivos digitales.",
+                "Mantener la separación en la fuente en los puntos ecológicos del colegio."
+            ] : [
+                "Use carpool or school bus at least 3 days a week.",
+                "Reduce printed sheets and prioritize digital notes.",
+                "Maintain active waste sorting at school eco-stations."
+            ];
+
+            defaultCommits.forEach(c => {
+                const li = document.createElement('li');
+                li.textContent = c;
+                commitList.appendChild(li);
+            });
+        }
+
+        function triggerActualPrint() {
+            const paperContent = document.getElementById('reportPaperContent').innerHTML;
+            const directPrintArea = document.getElementById('directPrintArea');
+            directPrintArea.innerHTML = paperContent;
+            window.print();
+        }
+    </script>
+</body>
+</html>
